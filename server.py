@@ -1,7 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import socket
-import SocketServer, SimpleHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
 
 PORT = 8888
 
@@ -10,8 +11,8 @@ s.connect(("gmail.com", 80))
 localIP = s.getsockname()[0]
 s.close()
 
-print "Starting server on " + localIP + ":" + str(PORT)
+print("Starting server on {}:{}".format(localIP, PORT))
 
-Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-server = SocketServer.TCPServer(('', PORT), Handler)
+Handler = SimpleHTTPRequestHandler
+server = TCPServer(('', PORT), Handler)
 server.serve_forever()
