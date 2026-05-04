@@ -87,15 +87,15 @@ SceNet_offsets_v365_v374 = {
 }
 
 ScePsp2Compat_functions_v365 = {
-  sceAppMgrIsDevelopmentMode_imp: 0x2c60ec,
+  sceAppMgrIsDevelopmentMode: 0x2c60ec,
 }
 
 ScePsp2Compat_functions_v367 = {
-  sceAppMgrIsDevelopmentMode_imp: 0x2c92c4,
+  sceAppMgrIsDevelopmentMode: 0x2c92c4,
 }
 
 scePsp2Compat_functions_v368_v374 = {
-  sceAppMgrIsDevelopmentMode_imp: 0x2c92d4,
+  sceAppMgrIsDevelopmentMode: 0x2c92d4,
 }
 
 ScePsp2Compat_offsets_v365_v374 = {
