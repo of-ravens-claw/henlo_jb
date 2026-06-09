@@ -6,7 +6,7 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-SceWebKit_gadgets_v365 = {
+SceWebKit_gadgets_v361_v365 = {
   ldm_r0_r0_r1_r4_r8_fp_ip_pc: 0x5490e4,
   ldm_r1_r0_ip_lr_pc: 0x2b120,
   ldm_r1_r0_r2_r3_r8_fp_ip_pc: 0x62b6e0,
@@ -33,11 +33,11 @@ SceWebKit_gadgets_v368_v374 = {
   str_r0_r3_bx_lr: 0x24367d,
 }
 
-SceWebKit_offsets_v365 = {
+SceWebKit_offsets_v361_v365 = {
   SceWebKit_base_off: 0xabb63c,
-  SceNet_stub_off: 0x85f3f4,
-  SceLibc_stub_off: 0x85f4e4,
-  ScePsp2Compat_stub_off: 0x85d2c4,
+  SceNet_stub_off: 0x85f3f4, // thunk to SceNet_07845128 (sceNetNtohs)
+  SceLibc_stub_off: 0x85f4e4, // thunk to SceLibc_006B54BA (realloc)
+  ScePsp2Compat_stub_off: 0x85d2c4, // thunk to ScePsp2Compat_001E09AF
   setscrollleft_off: 0x4e,
 }
 
@@ -57,21 +57,21 @@ SceWebKit_offsets_v368_v374 = {
   setscrollleft_off: 0x4e,
 }
 
-SceLibc_functions_v365_v374 = {
+SceLibc_functions_v360_v374 = {
   malloc: 0xfa19,
   free: 0xfa29,
 }
 
-SceLibc_gadgets_v365_v374 = {
+SceLibc_gadgets_v360_v374 = {
   setjmp: 0x14071,
   longjmp: 0x14099,
 }
 
-SceLibc_offsets_v365_v374 = {
+SceLibc_offsets_v360_v374 = {
   SceLibc_base_off: 0xfa49,
 }
 
-SceNet_functions_v365_v374 = {
+SceNet_functions_v360_v374 = {
   sceNetHtons: 0x23d5,
   sceNetSyscallClose: 0x9f60,
   sceNetSyscallBind: 0x9f80,
@@ -82,11 +82,11 @@ SceNet_functions_v365_v374 = {
   sceNetSyscallControl: 0xa110,
 }
 
-SceNet_offsets_v365_v374 = {
+SceNet_offsets_v360_v374 = {
   SceNet_base_off: 0x23ed,
 }
 
-ScePsp2Compat_functions_v365 = {
+ScePsp2Compat_functions_v360_v365 = {
   sceAppMgrIsDevelopmentMode: 0x2c60ec,
 }
 
@@ -94,15 +94,15 @@ ScePsp2Compat_functions_v367 = {
   sceAppMgrIsDevelopmentMode: 0x2c92c4,
 }
 
-scePsp2Compat_functions_v368_v374 = {
+ScePsp2Compat_functions_v368_v374 = {
   sceAppMgrIsDevelopmentMode: 0x2c92d4,
 }
 
-ScePsp2Compat_offsets_v365_v374 = {
-  ScePsp2Compat_base_off: 0x22d65,
+ScePsp2Compat_offsets_v360_v374 = {
+  ScePsp2Compat_base_off: 0x22d65, // points to ScePsp2Compat_001E09AF
 }
 
-SceNetPs_gadgets_v365_v370 = {
+SceNetPs_gadgets_v363_v370 = {
   blx_r0_pop_r3_pc: 0x2a11b,
   blx_r3_pop_r3_pc: 0x1959,
   blx_r4_add_sp_c_pop_r4_r5_pc: 0xe361,
@@ -152,7 +152,7 @@ SceNetPs_gadgets_v371_v374 = {
   empty_string: 0x22,
 }
 
-SceNetPs_offsets_v365_v370 = {
+SceNetPs_offsets_v363_v370 = {
   SceNetPs_base_off: -0x8d45,
 }
 
@@ -218,13 +218,21 @@ SceNetPs_dev_offsets_v371_v374 = {
   SceNetPs_base_off: -0x8d75,
 }
 
-SceSysmem_offsets_v365_v374 = {
+SceSysmem_offsets_v363_v374 = {
   SceSysmem_base_off: -0x810b,
   ksceKernelRemapBlock: 0x7f69,
   ksceKernelCpuDcacheWritebackRange: 0x22fcd,
 }
 
 supported_versions = {
+  // TODO: more? would be nice to go down to 3.30 or something...
+  // (this WebKit version was added with 3.30, unsure if the exploit works on older versions.)
+  // missing versions in order: 3.30, 3.35, 3.36, 3.50, 3.51, 3.52, 3.55, 3.57
+  // WebKit vulnerability confirmed working on 3.36
+  //
+  // TODO: 3.60
+  // TODO: 3.61
+  "3.63" : 0x03630011,
   "3.65" : 0x03650011,
   "3.67" : 0x03670011,
   "3.68" : 0x03680011,
@@ -237,30 +245,56 @@ supported_versions = {
 }
 
 version_deps = {
-  0x03650011: {
+  0x03630011: {
     "SceWebKit": {
-      gadgets: SceWebKit_gadgets_v365,
-      offsets: SceWebKit_offsets_v365,
+      gadgets: SceWebKit_gadgets_v361_v365,
+      offsets: SceWebKit_offsets_v361_v365,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
-      gadgets: SceNetPs_gadgets_v365_v370,
-      offsets: SceNetPs_offsets_v365_v370,
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
     },
     "ScePsp2Compat": {
-      functions: ScePsp2Compat_functions_v365,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v360_v365,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
+    },
+  },
+  0x03650011: {
+    "SceWebKit": {
+      gadgets: SceWebKit_gadgets_v361_v365,
+      offsets: SceWebKit_offsets_v361_v365,
+    },
+    "SceLibc": {
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
+    },
+    "SceNet": {
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
+    },
+    "SceNetPs": {
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
+    },
+    "ScePsp2Compat": {
+      functions: ScePsp2Compat_functions_v360_v365,
+      offsets: ScePsp2Compat_offsets_v360_v374
+    },
+    "SceSysmem": {
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03670011: {
@@ -269,24 +303,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v367,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
-      gadgets: SceNetPs_gadgets_v365_v370,
-      offsets: SceNetPs_offsets_v365_v370,
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
     },
     "ScePsp2Compat": {
       functions: ScePsp2Compat_functions_v367,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03680011: {
@@ -295,24 +329,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
-      gadgets: SceNetPs_gadgets_v365_v370,
-      offsets: SceNetPs_offsets_v365_v370,
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03690011: {
@@ -321,24 +355,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
-      gadgets: SceNetPs_gadgets_v365_v370,
-      offsets: SceNetPs_offsets_v365_v370,
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03700011: {
@@ -347,24 +381,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
-      gadgets: SceNetPs_gadgets_v365_v370,
-      offsets: SceNetPs_offsets_v365_v370,
+      gadgets: SceNetPs_gadgets_v363_v370,
+      offsets: SceNetPs_offsets_v363_v370,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03710011: {
@@ -373,24 +407,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
       gadgets: SceNetPs_gadgets_v371_v374,
       offsets: SceNetPs_offsets_v371_v374,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03720011: {
@@ -399,24 +433,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
       gadgets: SceNetPs_gadgets_v371_v374,
       offsets: SceNetPs_offsets_v371_v374,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03730011: {
@@ -425,24 +459,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
       gadgets: SceNetPs_gadgets_v371_v374,
       offsets: SceNetPs_offsets_v371_v374,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
   0x03740011: {
@@ -451,24 +485,24 @@ version_deps = {
       offsets: SceWebKit_offsets_v368_v374,
     },
     "SceLibc": {
-      functions: SceLibc_functions_v365_v374,
-      gadgets: SceLibc_gadgets_v365_v374,
-      offsets: SceLibc_offsets_v365_v374,
+      functions: SceLibc_functions_v360_v374,
+      gadgets: SceLibc_gadgets_v360_v374,
+      offsets: SceLibc_offsets_v360_v374,
     },
     "SceNet": {
-      functions: SceNet_functions_v365_v374,
-      offsets: SceNet_offsets_v365_v374,
+      functions: SceNet_functions_v360_v374,
+      offsets: SceNet_offsets_v360_v374,
     },
     "SceNetPs": {
       gadgets: SceNetPs_gadgets_v371_v374,
       offsets: SceNetPs_offsets_v371_v374,
     },
     "ScePsp2Compat": {
-      functions: scePsp2Compat_functions_v368_v374,
-      offsets: ScePsp2Compat_offsets_v365_v374
+      functions: ScePsp2Compat_functions_v368_v374,
+      offsets: ScePsp2Compat_offsets_v360_v374
     },
     "SceSysmem": {
-      offsets: SceSysmem_offsets_v365_v374,
+      offsets: SceSysmem_offsets_v363_v374,
     },
   },
 };

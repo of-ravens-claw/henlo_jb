@@ -2,7 +2,7 @@
 
 #include "bootstrap.h"
 
-// ALL 3.65-3.74 SPECIFIC SECTIONS ARE MARKED WITH "// BEGIN 3.65-3.74"
+// ALL 3.63-3.74 SPECIFIC SECTIONS ARE MARKED WITH "// BEGIN 3.63-3.74"
 
 #define BOOTSTRAP_LANDING_DIR "ur0:henlo/"
 
@@ -68,12 +68,12 @@ do {                                            \
 } while (0)
 
 #define ENTER_SYSCALL(state) do { \
-  __asm__ volatile ("mrc p15, 0, %0, c13, c0, 3" : "=r" (state)); \
-  __asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state << 16) : "memory"); \
-} while(0)
+	__asm__ volatile ("mrc p15, 0, %0, c13, c0, 3" : "=r" (state)); \
+	__asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state << 16) : "memory"); \
+} while (0)
 
 #define EXIT_SYSCALL(state) do { \
-  __asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state) : "memory"); \
+	__asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state) : "memory"); \
 } while (0)
 
 typedef uint64_t u64_t;
@@ -83,78 +83,76 @@ typedef uint8_t u8_t;
 
 typedef struct segment_info
 {
-	int           size;   // this structure size (0x18)
-	int           perms;  // probably rwx in low bits
-	void            *vaddr; // address in memory
-	int           memsz;  // size in memory
-	int           flags;  // meanig unknown
-	int           res;    // unused?
+	int  size;   // this structure size (0x18)
+	int  perms;  // probably rwx in low bits
+	void *vaddr; // address in memory
+	int  memsz;  // size in memory
+	int  flags;  // meanig unknown
+	int  res;    // unused?
 } segment_info_t;
 
 typedef struct SceModInfo {
-	int size;           //0
-	int UID;            //4
-	int mod_attr;       //8
-	char name[0x1C];        //0xC
-	u32_t unk0;         //0x28
-	void *module_start;     //0x2C addr0
-	void *module_init;      //0x30 addr1
-	void *module_stop;      //0x34 addr2
-	void *exidx_start;      //0x38 addr3
-	void *exidx_end;        //0x3C addr4
-	void *addr5;        //0x40 addr5
-	void *addr6;        //0x44 addr6
-	void *module_top;       //0x48 addr7
-	void *addr8;        //0x4C addr8
-	void *addr9;        //0x50 addr9
-	char filepath[0x100];   //0x54
-	segment_info_t  segments[4]; //0x58
-	u32_t unk2;         //0x1B4
-} SceModInfo; //0x1B8
+	int            size;            // 0x00
+	int            UID;             // 0x04
+	int            mod_attr;        // 0x08
+	char           name[0x1C];      // 0x0C
+	u32_t          unk0;            // 0x28
+	void           *module_start;   // 0x2C addr0
+	void           *module_init;    // 0x30 addr1
+	void           *module_stop;    // 0x34 addr2
+	void           *exidx_start;    // 0x38 addr3
+	void           *exidx_end;      // 0x3C addr4
+	void           *addr5;          // 0x40 addr5
+	void           *addr6;          // 0x44 addr6
+	void           *module_top;     // 0x48 addr7
+	void           *addr8;          // 0x4C addr8
+	void           *addr9;          // 0x50 addr9
+	char           filepath[0x100]; // 0x54
+	segment_info_t segments[4];     // 0x58
+	u32_t          unk2;            // 0x1B4
+} SceModInfo; // 0x1B8
 
 #define MOD_LIST_SIZE 0x80
-
 typedef struct module_imports_2
 {
-  u16_t size; // 0x24
-  u16_t version;
-  u16_t flags;
-  u16_t num_functions;
-  u32_t reserved1;
-  u32_t lib_nid;
-  char     *lib_name;
-  u32_t *func_nid_table;
-  void     **func_entry_table;
-  u32_t unk1;
-  u32_t unk2;
+	u16_t size; // 0x24
+	u16_t version;
+	u16_t flags;
+	u16_t num_functions;
+	u32_t reserved1;
+	u32_t lib_nid;
+	char  *lib_name;
+	u32_t *func_nid_table;
+	void  **func_entry_table;
+	u32_t unk1;
+	u32_t unk2;
 } module_imports_2_t;
 
 typedef struct module_exports // thanks roxfan
 {
-	u16_t   size;           // size of this structure; 0x20 for Vita 1.x
-	u8_t    lib_version[2]; //
-	u16_t   attribute;      // ?
-	u16_t   num_functions;  // number of exported functions
-	u32_t   num_vars;       // number of exported variables
-	u32_t   num_tls_vars;   // number of exported TLS variables?  <-- pretty sure wrong // yifanlu
-	u32_t   module_nid;     // NID of this specific export list; one PRX can export several names
-	char    *lib_name;      // name of the export module
-	u32_t   *nid_table;     // array of 32-bit NIDs for the exports, first functions then vars
-	void    **entry_table;  // array of pointers to exported functions and then variables
+	u16_t size;           // size of this structure; 0x20 for Vita 1.x
+	u8_t  lib_version[2]; //
+	u16_t attribute;      // ?
+	u16_t num_functions;  // number of exported functions
+	u32_t num_vars;       // number of exported variables
+	u32_t num_tls_vars;   // number of exported TLS variables?  <-- pretty sure wrong // yifanlu
+	u32_t module_nid;     // NID of this specific export list; one PRX can export several names
+	char  *lib_name;      // name of the export module
+	u32_t *nid_table;     // array of 32-bit NIDs for the exports, first functions then vars
+	void  **entry_table;  // array of pointers to exported functions and then variables
 } module_exports_t;
-
 typedef struct module_info // thanks roxfan
 {
-	u16_t   modattribute;  // ??
-	u16_t   modversion;    // always 1,1?
-	char    modname[27];   ///< Name of the module
-	u8_t    type;          // 6 = user-mode prx?
-	void    *gp_value;     // always 0 on ARM
+	u16_t modattribute;  // ??
+	u16_t modversion;    // always 1,1?
+	char  modname[27];   ///< Name of the module
+	u8_t  type;          // 6 = user-mode prx?
+	void  *gp_value;     // always 0 on ARM
 	int   ent_top;       // beginning of the export list (sceModuleExports array)
 	int   ent_end;       // end of same
 	int   stub_top;      // beginning of the import list (sceModuleStubInfo array)
 	int   stub_end;      // end of same
-	u32_t   module_nid;    // ID of the PRX? seems to be unused
+	u32_t module_nid;    // ID of the PRX? seems to be unused
 	int   field_38;      // unused in samples
 	int   field_3C;      // I suspect these may contain TLS info
 	int   field_40;      //
@@ -183,7 +181,7 @@ static inline int memcpy(void *dst, const void *src, int len) {
 	return 0;
 }
 
-module_info_t * find_modinfo(uint32_t start_addr, const char *needle) {
+module_info_t *find_modinfo(uint32_t start_addr, const char *needle) {
 	start_addr &= ~0xF;
 	start_addr += 4;
 
@@ -322,9 +320,9 @@ unsigned hook_sbl_F3411881(unsigned a1, unsigned a2, unsigned a3, unsigned a4) {
 		DACR_OFF(
 			g_homebrew_decrypt = 1;
 		);
-	// BEGIN 3.60-3.74
+		// BEGIN 3.60-3.74
 		somebuf[42] = 0x40;
-	// END 3.60-3.74
+		// END 3.60-3.74
 
 		return 0;
 	} else {
@@ -730,10 +728,11 @@ int xmount_vs0_grw0(void) {
 	ksceIoUmount(0xA00, 0, 0, 0);
 	ksceIoUmount(0xA00, 1, 0, 0);
 
-	// 3.63-3.74 only!
+	// BEGIN 3.63-3.74
 	uint32_t patch_off = 0x1d804;
 	if (firmware_version > 0x03680011)
 		patch_off = 0x1dc44;
+	// END 3.63-3.74
 
 	DACR_OFF(
 		memcpy((void*)(iofilemgr_seg0 + patch_off), custom_grw0_mp, sizeof(custom_grw0_mp));
@@ -761,13 +760,13 @@ void resolve_imports(unsigned sysmem_base) {
 	module_info_t *sysmem_info = find_modinfo(sysmem_base, "SceSysmem");
 	u32_t modulemgr_base;
 
-	// BEGIN 3.60-3.73 specific offsets here, used to find Modulemgr from just sysmem base
+	// BEGIN 3.60-3.74 specific offsets here, used to find Modulemgr from just sysmem base
 	LOG("sysmem base: 0x%08x", sysmem_base);
 	void *sysmem_data = (void*)(*(u32_t*)((u32_t)(sysmem_base) + 0x26a28) - 0xA0);
 	LOG("sysmem data base: 0x%08x", sysmem_data);
 	modulemgr_base = (*(u32_t*)((u32_t)(sysmem_data) + 0x438c) - 0x40);
 	LOG("modulemgr base: 0x%08x", modulemgr_base);
-	// END 3.60-3.73 specific offsets
+	// END 3.60-3.74 specific offsets
 
 	DACR_OFF(modulemgr_info = find_modinfo((u32_t)modulemgr_base, "SceKernelModulemgr"));
 	LOG("modulemgr modinfo: 0x%08x", modulemgr_info);
@@ -870,7 +869,6 @@ void resolve_imports(unsigned sysmem_base) {
 #define MAGIC_BUSY 0x42755379
 #define MAGIC_FREE 0x46724565
 #define MAGIC_MAAK 0x4d61416b
-
 typedef struct chunk_header {
 	uint32_t magic;
 	uint32_t free_lr;
@@ -881,7 +879,6 @@ typedef struct chunk_header {
 	uint32_t size;
 	uint32_t pad;
 } chunk_header_t;
-
 typedef struct chunk_footer {
 	uint32_t magic;
 	uint32_t pad;
@@ -889,7 +886,6 @@ typedef struct chunk_footer {
 
 void fix_netps_heap(uint32_t iflist_addr, uint32_t cur_fw) {
 
-	int new_fw = (cur_fw > 0x03700011);
 	int is_dev_mode = ksceSblACMgrIsDevelopmentMode();
 
 	LOG("ksceSblACMgrIsDevelopmentMode() returned %d\n", is_dev_mode);
@@ -905,30 +901,54 @@ void fix_netps_heap(uint32_t iflist_addr, uint32_t cur_fw) {
 	void* global_mutex = 0;
 	void* heap_mutex = 0;
 
-	if (is_dev_mode) {
-		free = (new_fw) ? (void*)(scenet_code + 0x5b05) : (void*)(scenet_code + 0x5b09);
-		control = (new_fw) ? (void*)(scenet_code + 0x89ed) : (void*)(scenet_code + 0x89bd);
-		ifunit = (new_fw) ? (void*)(scenet_code + 0xf8f5) : (void*)(scenet_code + 0xf8c5);
-		if_clone_destroy = (new_fw) ? (void*)(scenet_code + 0xf999) : (void*)(scenet_code + 0xf969);
-		in_control = (new_fw) ? (void*)(scenet_code + 0x1acd5) : (void*)(scenet_code + 0x1aca5);
-		sce_psnet_bnet_mutex_unlock = (new_fw) ? (void*)(scenet_code + 0x2a4ad) : (void*)(scenet_code + 0x2a47d);
-		sce_psnet_bnet_mutex_lock = (new_fw) ? (void*)(scenet_code + 0x2a415) : (void*)(scenet_code + 0x2a3e5);
+	if (cur_fw > 0x03700011) {
+		// BEGIN 3.71-3.74
+		if (is_dev_mode) {
+			ifunit = (void*)(scenet_code + 0xf8f5);
+			if_clone_destroy = (void*)(scenet_code + 0xf999);
+			in_control = (void*)(scenet_code + 0x1acd5);
+			sce_psnet_bnet_mutex_unlock = (void*)(scenet_code + 0x2a4ad);
+			sce_psnet_bnet_mutex_lock = (void*)(scenet_code + 0x2a415);
+		}
+		else {
+			ifunit = (void*)(scenet_code + 0xf865);
+			if_clone_destroy = (void*)(scenet_code + 0xf935);
+			in_control = (void*)(scenet_code + 0x1ac45);
+			sce_psnet_bnet_mutex_unlock = (void*)(scenet_code + 0x2a41d);
+			sce_psnet_bnet_mutex_lock = (void*)(scenet_code + 0x2a385);
+		}
+
+		free = (void*)(scenet_code + 0x5b05);
+		control = (void*)(scenet_code + 0x89ed);
+		// END 3.71-3.74
 	}
 	else {
-		free = (new_fw) ? (void*)(scenet_code + 0x5b05) : (void*)(scenet_code + 0x5b09);
-		control = (new_fw) ? (void*)(scenet_code + 0x89ed) : (void*)(scenet_code + 0x89bd);
-		ifunit = (new_fw) ? (void*)(scenet_code + 0xf865) : (void*)(scenet_code + 0xf835);
-		if_clone_destroy = (new_fw) ? (void*)(scenet_code + 0xf935) : (void*)(scenet_code + 0xf905);
-		in_control = (new_fw) ? (void*)(scenet_code + 0x1ac45) : (void*)(scenet_code + 0x1ac15);
-		sce_psnet_bnet_mutex_unlock = (new_fw) ? (void*)(scenet_code + 0x2a41d) : (void*)(scenet_code + 0x2a3ed);
-		sce_psnet_bnet_mutex_lock = (new_fw) ? (void*)(scenet_code + 0x2a385) : (void*)(scenet_code + 0x2a355);
-		global_mutex = (void*)((u32_t)scenet_data + 0x850);
-		heap_mutex = (void*)((u32_t)scenet_data + 0x88c);
+		// BEGIN 3.63-3.70
+		if (is_dev_mode) {
+			ifunit = (void*)(scenet_code + 0xf8c5);
+			if_clone_destroy = (void*)(scenet_code + 0xf969);
+			in_control = (void*)(scenet_code + 0x1aca5);
+			sce_psnet_bnet_mutex_unlock = (void*)(scenet_code + 0x2a47d);
+			sce_psnet_bnet_mutex_lock = (void*)(scenet_code + 0x2a3e5);
+		}
+		else {
+			ifunit = (void*)(scenet_code + 0xf835);
+			if_clone_destroy = (void*)(scenet_code + 0xf905);
+			in_control = (void*)(scenet_code + 0x1ac15);
+			sce_psnet_bnet_mutex_unlock = (void*)(scenet_code + 0x2a3ed);
+			sce_psnet_bnet_mutex_lock = (void*)(scenet_code + 0x2a355);
+		}
+
+		free = (void*)(scenet_code + 0x5b09);
+		control = (void*)(scenet_code + 0x89bd);
+		// END 3.63-3.70
 	}
 
+	// BEGIN 3.63-3.74
 	getiflist = (void*)(scenet_code + 0x2fc1);
 	global_mutex = (void*)((u32_t)scenet_data + 0x850);
 	heap_mutex = (void*)((u32_t)scenet_data + 0x88c);
+	// END 3.63-3.74
 
 	sce_psnet_bnet_mutex_lock(heap_mutex, 0);
 
@@ -1082,5 +1102,5 @@ void __attribute__ ((section (".text.start"))) payload(void *rx_block, uint32_t 
 	ksceKernelExitDeleteThread(0);
 
 	LOG("should not be here!");
-	while(1) {}
+	while (1) {}
 }
