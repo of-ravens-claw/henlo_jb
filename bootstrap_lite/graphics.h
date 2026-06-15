@@ -22,7 +22,7 @@ Color psvDebugScreenSetBgColor(Color color);
 void *psvDebugScreenGetVram();
 int psvDebugScreenGetX();
 int psvDebugScreenGetY();
-void psvDebugScreenSetXY();
+void psvDebugScreenSetXY(int x, int y);
 
 // draw rectangle
 void draw_rect(int x, int y, int width, int height, Color color);

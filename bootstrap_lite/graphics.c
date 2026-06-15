@@ -8,6 +8,7 @@
 #include <psp2/display.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/paf/stdc.h>
 
 enum {
 	SCREEN_WIDTH = 960,

@@ -18,18 +18,25 @@
 #include <psp2/net/netctl.h>
 #include <psp2/io/stat.h>
 #include <psp2/io/dirent.h>
+#include <psp2/kernel/clib.h>
+#include <psp2/power.h>
+#include <psp2/appmgr.h>
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
+
 #include "graphics.h"
 #include "Archives.h"
 #include "crc32.c"
 
+int promoteApp(const char* path);
+
 #define printf psvDebugScreenPrintf
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #define cprintf sceClibPrintf

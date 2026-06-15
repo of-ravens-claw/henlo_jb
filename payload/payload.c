@@ -482,7 +482,7 @@ void temp_sigpatches(void) {
 		memcpy(old_ux0_data_path, ux0_data_path_addr, sizeof(old_ux0_data_path));
 		memcpy(ux0_data_path_addr, ur0_temp_path, sizeof(ur0_temp_path));
 	);
-    LOG("hooked ux0:data path");
+	LOG("hooked ux0:data path");
 
 	DACR_OFF(has_sigpatches = 1);
 

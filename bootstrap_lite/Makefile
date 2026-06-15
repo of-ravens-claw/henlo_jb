@@ -17,3 +17,6 @@ main.velf: main.elf
 
 main.elf: $(OBJS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+
+clean:
+	@rm -f bootstrap.self main.velf main.elf $(OBJS)

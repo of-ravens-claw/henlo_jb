@@ -44,6 +44,13 @@ extern "C" {
 #include <malloc.h>
 #include <sys/stat.h>
 #include <psp2/io/dirent.h>
+#include <psp2/io/stat.h>
+#include <psp2/kernel/clib.h>
+#include <psp2/paf/stdc.h>
+
+// missing from the paf headers
+int sce_paf_sprintf(char* dst, const char* fmt, ...);
+
 #include "Archives.h"
 
 /******************************************************************************

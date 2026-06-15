@@ -3,6 +3,12 @@
 #include <psp2/promoterutil.h>
 #include <psp2/sysmodule.h>
 #include <psp2/io/fcntl.h>
+#include <psp2/io/stat.h>
+#include <psp2/kernel/clib.h>
+
+#include <stdlib.h>
+#include <string.h>
+
 #include "sha1.h"
 #include "head_bin.h"
 

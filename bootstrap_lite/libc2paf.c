@@ -1,4 +1,13 @@
 #include <stddef.h>
+#include <psp2/paf/stdc.h>
+
+// missing from the paf headers
+void* sce_paf_fopen(const char* filename, const char* mode);
+int sce_paf_fclose(void* fp);
+int sce_paf_fread(void* buf, int size, int count, void* fp);
+int sce_paf_fwrite(void* buf, int size, int count, void* fp);
+int sce_paf_fseek(void* fp, long offset, int whence);
+long sce_paf_ftell(void* fp);
 
 void *malloc(int size) {
     return sce_paf_malloc(size);
