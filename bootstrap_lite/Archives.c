@@ -318,15 +318,16 @@ static unsigned long ZipLocateCentralDir(FILE *file)
 			break;
 
 		for(i = (int)ureadsize - 3; (i--) > 0;)
-
+		{
 			if(((*(buf + i)) == 0x50) && ((*(buf + i + 1)) == 0x4b) && ((*(buf + i + 2)) == 0x05) && ((*(buf + i + 3)) == 0x06))
 			{
 				uposfound = ureadpos + i;
 				break;
 			}
+		}
 
-			if (uposfound != 0)
-				break;
+		if (uposfound != 0)
+			break;
 	}
 
 	FreePatch(buf);

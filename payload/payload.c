@@ -14,65 +14,75 @@
 #define LOG(fmt, ...)
 #endif
 
-#define NULL ((void *)0)
+#define NULL ((void*)0)
 
-#define DACR_OFF(stmt)                 \
-do {                                   \
-	unsigned prev_dacr;                \
-	__asm__ volatile(                  \
-		"mrc p15, 0, %0, c3, c0, 0 \n" \
-		: "=r" (prev_dacr)             \
-	);                                 \
-	__asm__ volatile(                  \
-		"mcr p15, 0, %0, c3, c0, 0 \n" \
-		: : "r" (0xFFFF0000)           \
-	);                                 \
-	stmt;                              \
-	__asm__ volatile(                  \
-		"mcr p15, 0, %0, c3, c0, 0 \n" \
-		: : "r" (prev_dacr)            \
-	);                                 \
+#define DACR_OFF(stmt)                                                         \
+do {                                                                           \
+	unsigned prev_dacr;                                                    \
+	__asm__ volatile("mrc p15, 0, %0, c3, c0, 0 \n" : "=r" (prev_dacr));   \
+	__asm__ volatile("mcr p15, 0, %0, c3, c0, 0 \n" : : "r" (0xFFFF0000)); \
+	stmt;                                                                  \
+	__asm__ volatile("mcr p15, 0, %0, c3, c0, 0 \n" : : "r" (prev_dacr));  \
 } while (0)
 
-#define INSTALL_HOOK(func, addr) \
-do {                                               \
-	unsigned *target;                              \
-	target = (unsigned*)(addr);                    \
-	*target++ = 0xE59FF000; /* ldr pc, [pc, #0] */ \
-	*target++; /* doesn't matter */                \
-	*target = (unsigned)func;                      \
+// Encodes the following instruction sequence, in ARM mode:
+// - LDR PC, [PC, #0]
+// - NOP              @ This instruction will never be executed.
+// - DCD addr         @ 32-bit address to jump to.
+// Corrupts 12 bytes.
+#define INSTALL_HOOK(func, addr)              \
+do {                                          \
+	uint32_t* target = (uint32_t*)(addr); \
+	target[0] = 0xE59FF000;               \
+	target[1] = 0xE320F000;               \
+	target[2] = (uint32_t)(func);         \
 } while (0)
 
-#define INSTALL_HOOK_THUMB(func, addr) \
-do {                                                \
-	unsigned *target;                                 \
-	target = (unsigned*)(addr);                       \
-	*target++ = 0xC004F8DF; /* ldr.w	ip, [pc, #4] */ \
-	*target++ = 0xBF004760; /* bx ip; nop */          \
-	*target = (unsigned)func;                         \
+// Encodes the following instruction sequence, in Thumb mode.
+// - LDR.W IP, [PC, #4]
+// - BX    IP
+// - NOP                @ This instruction will never be executed.
+// - DCD addr           @ 32-bit address to jump to.
+// Corrupts 12 bytes.
+#define INSTALL_HOOK_THUMB(func, addr)        \
+do {                                          \
+	uint32_t* target = (uint32_t*)(addr); \
+	target[0] = 0xC004F8DF;               \
+	target[1] = 0xBF004760;               \
+	target[2] = (uint32_t)(func);         \
 } while (0)
 
-#define INSTALL_RET(addr, ret) \
-do {                                            \
-	unsigned *target;                             \
-	target = (unsigned*)(addr);                   \
-	*target++ = 0xe3a00000 | ret; /* mov r0, #ret */ \
-	*target = 0xe12fff1e; /* bx lr */             \
+// Encodes the following instruction sequence, in ARM mode:
+// - MOV R0, #ret
+// - BX  LR
+// Corrupts 8 bytes.
+// `ret` must be encoded according to ARM's immediate encoding scheme.
+#define INSTALL_RET(addr, ret)                \
+do {                                          \
+	uint32_t* target = (uint32_t*)(addr); \
+	target[0] = 0xE3A00000 | (ret);       \
+	target[1] = 0xE12FFF1E;               \
 } while (0)
 
-#define INSTALL_RET_THUMB(addr, ret) \
-do {                                            \
-	unsigned *target;                             \
-	target = (unsigned*)(addr);                   \
-	*target = 0x47702000 | ret; /* movs r0, #ret; bx lr */ \
+// Encodes the following instruction sequence, in Thumb mode:
+// - MOVS R0, #ret
+// - BX   LR
+// Corrupts 4 bytes.
+// `ret` must be an 8-bit immediate.
+#define INSTALL_RET_THUMB(addr, ret)          \
+do {                                          \
+	uint32_t* target = (uint32_t*)(addr); \
+	target[0] = 0x47702000 | (ret);       \
 } while (0)
 
-#define ENTER_SYSCALL(state) do { \
-	__asm__ volatile ("mrc p15, 0, %0, c13, c0, 3" : "=r" (state)); \
+#define ENTER_SYSCALL(state)                                                             \
+do {                                                                                     \
+	__asm__ volatile ("mrc p15, 0, %0, c13, c0, 3" : "=r" (state));                  \
 	__asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state << 16) : "memory"); \
 } while (0)
 
-#define EXIT_SYSCALL(state) do { \
+#define EXIT_SYSCALL(state)                                                        \
+do {                                                                               \
 	__asm__ volatile ("mcr p15, 0, %0, c13, c0, 3" :: "r" (state) : "memory"); \
 } while (0)
 
@@ -91,7 +101,8 @@ typedef struct segment_info
 	int  res;    // unused?
 } segment_info_t;
 
-typedef struct SceModInfo {
+typedef struct SceModInfo
+{
 	int            size;            // 0x00
 	int            UID;             // 0x04
 	int            mod_attr;        // 0x08
@@ -141,6 +152,7 @@ typedef struct module_exports // thanks roxfan
 	u32_t *nid_table;     // array of 32-bit NIDs for the exports, first functions then vars
 	void  **entry_table;  // array of pointers to exported functions and then variables
 } module_exports_t;
+
 typedef struct module_info // thanks roxfan
 {
 	u16_t modattribute;  // ??
@@ -317,18 +329,14 @@ unsigned hook_sbl_F3411881(unsigned a1, unsigned a2, unsigned a3, unsigned a4) {
 	u64_t authid;
 
 	if (res == 0x800f0624 || res == 0x800f0616 || res == 0x800f0024 || (res >= 0x800f0b30 && res <= 0x800f0b3f)) {
-		DACR_OFF(
-			g_homebrew_decrypt = 1;
-		);
+		DACR_OFF(g_homebrew_decrypt = 1);
 		// BEGIN 3.60-3.74
 		somebuf[42] = 0x40;
 		// END 3.60-3.74
 
 		return 0;
 	} else {
-		DACR_OFF(
-			g_homebrew_decrypt = 0;
-		);
+		DACR_OFF(g_homebrew_decrypt = 0);
 	}
 	return res;
 }
@@ -544,9 +552,7 @@ void remove_sigpatches(void) {
 	);
 	LOG("unhooked ksceSblACMgrIsDevelopmentMode");
 
-	DACR_OFF(
-		memcpy(ux0_data_path_addr, old_ux0_data_path, sizeof(old_ux0_data_path));
-	);
+	DACR_OFF(memcpy(ux0_data_path_addr, old_ux0_data_path, sizeof(old_ux0_data_path)));
 	LOG("unhooked ux0:data path");
 
 	DACR_OFF(has_sigpatches = 0);
@@ -635,10 +641,9 @@ end:
 }
 
 static void __attribute__((noinline, naked)) free_and_exit(int blk, void *free, void *lr) {
-	// now free the executable memory. this frees our current function so we have
-	// to ensure we do not return here
-	__asm__ volatile ("mov lr, %0\n"
-										"bx r1" :: "r" (lr) : "lr");
+	// now free the executable memory.
+	// this frees our current function so we have to ensure we do not return here
+	__asm__ volatile ("mov lr, %0\nbx %1" :: "r"(lr), "r"(free) : "lr");
 }
 
 void cleanup_memory(void) {
@@ -734,9 +739,7 @@ int xmount_vs0_grw0(void) {
 		patch_off = 0x1dc44;
 	// END 3.63-3.74
 
-	DACR_OFF(
-		memcpy((void*)(iofilemgr_seg0 + patch_off), custom_grw0_mp, sizeof(custom_grw0_mp));
-	);
+	DACR_OFF(memcpy((void*)(iofilemgr_seg0 + patch_off), custom_grw0_mp, sizeof(custom_grw0_mp)));
 
 	ksceIoUmount(0xA00, 0, 0, 0);
 	ksceIoUmount(0xA00, 1, 0, 0);
@@ -1081,9 +1084,7 @@ void __attribute__ ((section (".text.start"))) payload(void *rx_block, uint32_t 
 	temp_sigpatches();
 
 	LOG("find rx block");
-	DACR_OFF(
-		g_rx_block = ksceKernelFindMemBlockByAddr(rx_block, 0);
-	);
+	DACR_OFF(g_rx_block = ksceKernelFindMemBlockByAddr(rx_block, 0));
 
 	LOG("flush changes");
 	void *base;
