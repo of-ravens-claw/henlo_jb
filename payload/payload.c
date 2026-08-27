@@ -18,7 +18,7 @@
 
 #define DACR_OFF(stmt)                                                         \
 do {                                                                           \
-	unsigned prev_dacr;                                                    \
+	uint32_t prev_dacr;                                                    \
 	__asm__ volatile("mrc p15, 0, %0, c3, c0, 0 \n" : "=r" (prev_dacr));   \
 	__asm__ volatile("mcr p15, 0, %0, c3, c0, 0 \n" : : "r" (0xFFFF0000)); \
 	stmt;                                                                  \
@@ -246,7 +246,9 @@ void *find_import(module_info_t *mod, uint32_t lnid, uint32_t fnid) {
 
 static uint32_t firmware_version = 0;
 
+#ifdef DEBUG
 static void (*debug_print)(char* fmt, ...) = 0;
+#endif
 
 static int (*hook_resume_sbl_F3411881)() = 0;
 static int (*hook_resume_sbl_89CCDA2C)() = 0;
@@ -763,13 +765,13 @@ void resolve_imports(unsigned sysmem_base) {
 	module_info_t *sysmem_info = find_modinfo(sysmem_base, "SceSysmem");
 	u32_t modulemgr_base;
 
-	// BEGIN 3.60-3.74 specific offsets here, used to find Modulemgr from just sysmem base
+	// BEGIN 3.63-3.74 specific offsets here, used to find Modulemgr from just sysmem base
 	LOG("sysmem base: 0x%08x", sysmem_base);
 	void *sysmem_data = (void*)(*(u32_t*)((u32_t)(sysmem_base) + 0x26a28) - 0xA0);
 	LOG("sysmem data base: 0x%08x", sysmem_data);
 	modulemgr_base = (*(u32_t*)((u32_t)(sysmem_data) + 0x438c) - 0x40);
 	LOG("modulemgr base: 0x%08x", modulemgr_base);
-	// END 3.60-3.74 specific offsets
+	// END 3.63-3.74 specific offsets
 
 	DACR_OFF(modulemgr_info = find_modinfo((u32_t)modulemgr_base, "SceKernelModulemgr"));
 	LOG("modulemgr modinfo: 0x%08x", modulemgr_info);
@@ -856,7 +858,7 @@ void resolve_imports(unsigned sysmem_base) {
 		ksceKernelGetMemBlockBase = find_export(sysmem_info, 0xA841EDDA);
 		ksceKernelGetProcessInfo = find_export(processmgr_info, 0x0AFF3EAE);
 		ksceSblACMgrIsDevelopmentMode = find_export(sblacmgr_info, 0xE87D1777);
-		);
+	);
 
 	// BEGIN 3.63-3.74
 	int *syscall_lo = (int *)(modulemgr_data + 0x2038c);
@@ -1053,13 +1055,17 @@ void __attribute__ ((section (".text.start"))) payload(void *rx_block, uint32_t 
 	// find sysmem base, etc
 	uint32_t sysmem_base = sysmem_addr;
 	int ret;
-	// BEGIN 3.60-3.74
+	// BEGIN 3.55-3.74
+#ifdef DEBUG
 	void (*debug_print_local)(char* s, ...) = (void*)(sysmem_base + 0x1A155);
+#endif
 	void* (*get_sysbase)(void) = (void*)(sysmem_base + 0x1f821);
-	// END 3.60-3.74
+	// END 3.55-3.74
 
 	DACR_OFF(
+#ifdef DEBUG
 		debug_print = debug_print_local;
+#endif
 		firmware_version = *(uint32_t*)(*(int*)(get_sysbase() + 0x6c) + 4);
 	);
 
